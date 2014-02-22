@@ -1,6 +1,9 @@
-TODO
+everGTD
 ==============================================
+A GTD wrapper around evernote.
 
+TODO
+===
 - Automate base structure creation
   - 'inbox' notebook
   - 'next_actions' notebook
