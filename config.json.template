@@ -1,0 +1,9 @@
+{
+  "API_CONSUMER_KEY" : "YOUR API CONSUMER KEY",
+  "API_CONSUMER_SECRET" : "YOUR API CONSUMER SECRET",
+  "SANDBOX" : true,
+  "redis":{
+    "host": "localhost",
+    "port": 6379
+  }
+}
