@@ -1,18 +1,15 @@
-var config = require('../../config.json');
+var config = require('../config.json');
 var e = require("evernote");
 var Evernote = e.Evernote;
 var NoteFilter = e.Evernote.NoteFilter;
 var NotesMetadataResultSpec = e.Evernote.NotesMetadataResultSpec;
 var Promise = require("bluebird");
+var evernoteClient = require("../libs/evernoteClient");
 
+// /tasks/view/nextActions
 exports.viewNextActions = function(req, res){
-  var token = req.session.oauthAccessToken;
-  var client = new Evernote.Client({
-    token: token,
-    sandbox: config.SANDBOX
-  });
-
-  var noteStore = Promise.promisifyAll(client.getNoteStore());
+  console.log(evernoteClient.getClient());
+  var noteStore = Promise.promisifyAll(evernoteClient.getClient().getNoteStore());
   var filter = new NoteFilter();
   var rspec = new NotesMetadataResultSpec();
   rspec.includeTitle = true;

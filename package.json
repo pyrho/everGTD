@@ -13,6 +13,8 @@
     "evernote": "*",
     "bluebird": "*",
     "redis":"*",
-    "connect-redis":"*"
+    "connect-redis":"*",
+    "monk": "*",
+    "winston": "*"
   }
 }

@@ -1,0 +1,21 @@
+extends layout
+block content
+  div.container
+    div.row
+      div.col-md-offset-4.col-md-4.well
+        form(action="/auth/register", method="POST", role="form")
+          div.form-group
+            label(for="username") Username
+            input(id="username", type="text", name="username")
+
+          div.form-group
+            label(for="email") Email
+            input(id='email', type="email", name="email")
+
+          div.form-group
+            label(for="password") Password
+            input(id='password', type="password", name="password")
+              
+          button.btn.btn-default(type="submit") Register
+
+        a(href="/auth/login") Login

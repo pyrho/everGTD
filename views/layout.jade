@@ -3,5 +3,21 @@ html
   head
     title Evernote Node.js Express Demo
     link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/bootstrap/css/bootstrap.css')
+    link(rel='stylesheet', href='/alertify/alertify.core.css')
+    link(rel='stylesheet', href='/alertify/alertify.bootstrap.css')
+    script(src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js")
+    script(src="/alertify/alertify.min.js")
+    script(src="/bootstrap/js/bootstrap.js")
+    script.
+      $(document).ready(function(){
+        var messages = !{JSON.stringify(session.messages)};
+        for(var i = 0; i < messages.length; ++i){
+          alertify.log(messages[i][0]);
+        }
+      });
+    - session.messages = [];
   body
+    
     block content
+

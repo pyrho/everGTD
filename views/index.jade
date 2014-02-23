@@ -1,53 +1,12 @@
 extends layout
 
 block content
-  h1 Evernote Node.js Express Demo
-  p
-    | This application uses the 
-    a(href='http://expressjs.com/') Express
-    |  framework to demonstrate the use of OAuth to authenticate to the Evernote web service.
-  hr
-  - if(session.error)
-    h2 Error
+  if !session.evernoteAccountBound
     p
-      = session.error
-  h2 Authentication
-  - if(session.oauthAccessToken)
-    a(href='/auth/logout') Click here
-    |  to 
-    | start over
-  - else
-    a(href='/auth/oauth') Click here
-    |  to 
-    | connect Evernote
+      a(href="/auth/oauth") Link with evernote!
+  p
+    a(href="/auth/logout") Logout
 
-  hr
-  - if(session.notebooks)
-    h2 Notebooks
-    ul
-      - for (var i = 0; i < session.notebooks.length; ++i)
-        li= session.notebooks[i].name
-    hr
-  h2 Current status
-  ul
-    li
-      b NoteStore URL:  
-      = session.edamNoteStoreUrl
-    li
-      b Web API URL prefix: 
-      = session.edamNoteStoreUrl
-  h3 Token Credentials:
-  ul
-    li
-      b token:  
-      = session.oauthAccessToken
-    li
-      b secret:  
-      = session.oauthAccessTokenSecret
-    li
-      b User ID:  
-      = session.edamUserId
-    li
-      b Expires:  
-      = session.edamExpires
-    
+  p
+    a(href="/tasks/view/nextActions") Next actions
+  
