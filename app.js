@@ -57,7 +57,6 @@ app.configure('development', function(){
 
 
 function restrict(req, res, next){
-  console.log(req.session);
   if(req.session.loggedin){
     next();
   }
@@ -83,6 +82,7 @@ app.get('/auth/oauth', restrict, authRoutes.oauth);
 app.get('/auth/oauth_callback', restrict, authRoutes.oauthCallback);
 
 // Tasks
+app.get('/tasks/syncNotebooks', restrict, taskRoutes.syncNotebooks);
 app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
 // }}}
 

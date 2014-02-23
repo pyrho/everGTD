@@ -1,3 +1,4 @@
+var Promise = require('bluebird');
 var Evernote = require('evernote').Evernote;
 var config = require('../config.json');
 var evernoteClient = require('../libs/evernoteClient');
@@ -22,7 +23,7 @@ exports.registerPost = function(req, res){
   userModel.createUser(username, password, email)
     .then(function(userData){
       if(userData.found){
-        req.session.messages.push('This username already exists');
+        req.flash('error', 'This username already exists');
         return res.redirect('/auth/createAccount');
       }
 
@@ -128,13 +129,14 @@ exports.oauthCallback = function(req, res) {
         userModel.bindEvernoteAccount(req.session.userId, oauthAccessToken, results.edam_userId).error(function(e){
           logger.error(e);
         }).done(function(){
-          // Should sync notebooks here..
           req.session.evernoteAccountBound = true;
+          // Should sync notebooks here..
           res.redirect('/');
         });
       }
     });
 };
+
 // }}}
 
 

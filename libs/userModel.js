@@ -136,4 +136,21 @@ module.exports.updateUserData = function(findParams, updatedParams){
   });
 };
 
+module.exports.updateNotebooks = function(userId, naGuid, inbGuid){
+  return new Promise(function(resolve, reject){
+    module.exports.updateUserData({_id: userId}, {
+      '$set': {
+        'notebooks': {
+          'nextActions': naGuid,
+          'inbox': inbGuid
+        }
+      }
+    }).error(function(e){
+      reject(e);
+    }).done(function(){
+      resolve();
+    });
+  });
+};
+
 // vim: sw=2 ts=2 et

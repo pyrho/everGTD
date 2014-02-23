@@ -9,7 +9,12 @@ function evernoteClient(){
 
   // Functions
   this.initialize = function(accessToken){
-    logger.debug('evernoteClient.initialize');
+    if(this._client){
+      logger.debug('evernoteClient already initialized');
+      return;
+    }
+    console.trace();
+    logger.debug('initializing evernote client');
     this._accessToken = accessToken;
     this._client = new Evernote.Client({
       token: this._accessToken,
@@ -21,8 +26,11 @@ function evernoteClient(){
     if(this._client){
       return this._client;
     }
+    else{
+      logger.error('Client is undefined!');
+    }
   };
-};
+}
 
 var thisClient = new evernoteClient();
 module.exports = thisClient;

@@ -13,7 +13,15 @@ html
       $(document).ready(function(){
         var messages = !{JSON.stringify(session.messages)};
         for(var i = 0; i < messages.length; ++i){
-          alertify.log(messages[i][0]);
+          if(messsaes[i][0] === "info"){
+            alertify.log(messages[i][1]);
+          }
+          if(messsaes[i][0] === "error"){
+            alertify.error(messages[i][1]);
+          }
+          if(messsaes[i][0] === "success"){
+            alertify.success(messages[i][1]);
+          }
         }
       });
     - session.messages = [];
