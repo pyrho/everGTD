@@ -58,6 +58,7 @@ module.exports.loginPost = function(req, res){
         req.session.loggedin = true;
         req.session.userId = user._id;
         req.session.evernoteAccountBound = user.evernoteAccountBound;
+        req.session.oauthAccessToken = user.accessToken;
       }
       else{
         req.flash('Invalid username/password combination');

@@ -4,6 +4,8 @@ block content
 
   for note in notes
     p
-      note
-    h1= note.title
+    if note.tags.length > 0
+      h1= note.title + "|" + note.tags
+    else
+      h1= note.title
     span= note.content

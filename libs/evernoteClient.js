@@ -85,25 +85,51 @@ function evernoteClient(){
     });
   };
 
-  this.getNotesContent = function(notesList){
+  this.getNoteTag = function(noteGuid){
+    var self = this;
+    return new Promise(function(resolve, reject){
+      var client = self.getClient();
+      var noteStore = Promise.promisifyAll(client.getNoteStore());
+      return noteStore.getNoteTagNamesAsync(self._accessToken, noteGuid).error(function(e){
+        reject(e);
+      }).done(function(tags){
+        resolve(tags);
+      });
+    });
+  };
+
+  this.getNoteContent = function(noteGuid){
     var self = this;
     return new Promise(function(resolve, reject){
       var client = self.getClient();
       var noteStore = Promise.promisifyAll(client.getNoteStore());
 
+      logger.debug('Getting note data for ' + noteGuid);
+      noteStore.getNoteAsync(self._accessToken, noteGuid, true, false, false, false).error(function(e){
+        return reject(e);
+      }).done(function(noteWithContent){
+        noteWithContent.content = enml.PlainTextOfENML(noteWithContent.content);
+        resolve(noteWithContent);
+      });
+    });
+  };
+
+  this.getNotesContent = function(notesList){
+    var self = this;
+    return new Promise(function(resolve, reject){
       Promise.map(notesList, function(note){
-        logger.debug('Getting note data for ' + notesList[0].guid);
-        return noteStore.getNoteAsync(self._accessToken, note.guid, true, false, false, false);
+        return Promise.all([
+          self.getNoteContent(note.guid),
+          self.getNoteTag(note.guid)
+        ]).error(function(e){
+          return Promise.reject(e);
+        }).spread(function(noteContent, noteTags){
+          noteContent.tags = noteTags;
+          return noteContent;
+        });
       }).error(function(e){
         return reject(e);
       }).done(function(notes){
-        console.log(notes[0]);
-        notes = notes.map(function(note){
-          return {
-            title: note.title,
-            content: enml.PlainTextOfENML(note.content)
-          };
-        });
         return resolve(notes);
       });
     });
