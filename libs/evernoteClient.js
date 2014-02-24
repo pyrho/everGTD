@@ -121,16 +121,14 @@ function evernoteClient(){
         return Promise.all([
           self.getNoteContent(note.guid),
           self.getNoteTag(note.guid)
-        ]).error(function(e){
-          return Promise.reject(e);
-        }).spread(function(noteContent, noteTags){
+        ]).spread(function(noteContent, noteTags){
           noteContent.tags = noteTags;
           return noteContent;
         });
+      }).then(function(notes){
+        return resolve(notes);
       }).error(function(e){
         return reject(e);
-      }).done(function(notes){
-        return resolve(notes);
       });
     });
   };
