@@ -1,0 +1,9 @@
+extends ../layout
+block content
+  script.
+
+  for note in notes
+    p
+      note
+    h1= note.title
+    span= note.content

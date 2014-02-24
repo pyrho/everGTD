@@ -1,36 +1,26 @@
 var Promise = require('bluebird');
 var logger = require('../libs/logger');
-var e = require('evernote');
-var NoteFilter = e.Evernote.NoteFilter;
-var NotesMetadataResultSpec = e.Evernote.NotesMetadataResultSpec;
 var evernoteClient = require('../libs/evernoteClient');
-var userModel = require("../libs/userModel");
+var userModel = require('../libs/userModel');
 
 // /tasks/view/nextActions
 exports.viewNextActions = function(req, res){
-  console.log(evernoteClient.getClient());
-  var noteStore = Promise.promisifyAll(evernoteClient.getClient().getNoteStore());
-  var filter = new NoteFilter();
-  var rspec = new NotesMetadataResultSpec();
-  rspec.includeTitle = true;
-
-  noteStore.findNotesMetadataAsync(req.session.oauthAccessToken, filter, 0, 5, rspec).then(function(notes){
-    console.log(notes);
-    res.render('index');
-  }).error(function(e){
-    console.log(" ERROR!: " + e);
+  userModel.findUser({_id: req.session.userId}).error(function(e){
+    logger.error('Error getting user: ' + e);
+  }).done(function(user){
+    var nextActionsGuid = user.notebooks.nextActions;
+    evernoteClient.getNotesList(req.session, nextActionsGuid).error(function(e){
+      logger.error('Error getNotesList user: ' + e);
+    }).then(function(notes){
+      return res.render('tasks/next_actions', {
+        notes: notes
+      });
+    });
   });
-  /*
-  noteStore.listNotebooks(req.session.oauthAccessToken, function(err, notebooks){
-
-    console.log(JSON.stringify(notebooks));
-    res.render('index');
-  });
-  */
 };
 
 module.exports.syncNotebooks = function(req, res){
-  var noteStore = Promise.promisifyAll(evernoteClient.getClient().getNoteStore());
+  var noteStore = Promise.promisifyAll(evernoteClient.getClient(req.session).getNoteStore());
 
   noteStore.listNotebooksAsync(req.session.oauthAccessToken).error(function(e){
     logger.error('Error in syncNotebooks: ' + e);
