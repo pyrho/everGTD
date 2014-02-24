@@ -15,6 +15,7 @@
     "redis":"*",
     "connect-redis":"*",
     "monk": "*",
-    "winston": "*"
+    "winston": "*",
+    "enml-js": "*"
   }
 }
