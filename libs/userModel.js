@@ -12,10 +12,7 @@ module.exports.findUser = function(findParams){
     usersCollection.findOne(findParams)
       .success(function(user){
         return resolve(user);
-      }).on('error', function(e){
-        logger.error('Error in findUser:' + e);
-        return reject(e);
-      });
+      }).on('error', reject);
   });
 };
 
@@ -28,10 +25,7 @@ module.exports.authenticateUser = function(username, password){
       password: hashedPw
     }).success(function(user){
       return resolve(user);
-    }).on('error', function(e){
-      return reject(e);
-    });
-
+    }).on('error', reject);
   });
 };
 
