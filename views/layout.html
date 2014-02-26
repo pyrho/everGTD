@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Evernote Node.js Express Demo</title>
+        <link rel='stylesheet' href='/stylesheets/style.css'/>
+        <link rel='stylesheet' href='/bootstrap/css/bootstrap.css'/>
+        <link rel='stylesheet' href='/alertify/alertify.core.css'/>
+        <link rel='stylesheet' href='/alertify/alertify.bootstrap.css'/>
+    </head>
+    <body>
+        {{{ yield }}}
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="/alertify/alertify.min.js"></script>
+        <script src="/bootstrap/js/bootstrap.js"></script>
+        <script>
+          $(document).ready(function(){
+              {{#messages.info}}
+                  alertify.log("{{.}}");
+              {{/messages.info}}
+
+              {{#messages.error}}
+                  alertify.error("{{.}}");
+              {{/messages.error}}
+
+              {{#messages.success}}
+                  alertify.success("{{.}}");
+              {{/messages.success}}
+          });
+        </script>
+    </body>
+</html>

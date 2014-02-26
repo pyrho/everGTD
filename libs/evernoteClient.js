@@ -125,6 +125,7 @@ function evernoteClient(){
           return Promise.reject(e);
         }).spread(function(noteContent, noteTags){
           noteContent.tags = noteTags;
+          noteContent.guid = note.guid;
           return noteContent;
         });
       }).error(function(e){

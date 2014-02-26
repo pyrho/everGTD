@@ -8,4 +8,5 @@ block content
       h1= note.title + "|" + note.tags
     else
       h1= note.title
-    span= note.content
+    //a(href="https://sandbox.evernote.com/Home.action#st=p&n=#{note.guid}" 
+    pre= note.content

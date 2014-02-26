@@ -15,7 +15,10 @@ var app = express();
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');
-  app.set('view engine', 'jade');
+  app.set('view engine', 'html');
+  app.set('layout', 'layout');
+  app.enable('view cache');
+  app.engine('html', require('hogan-express'));
   app.use(express.favicon());
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
@@ -37,11 +40,18 @@ app.configure(function(){
 
   app.use(function(req, res, next) {
     var session = req.session;
-    var messages = session.messages || (session.messages = []);
+    var messages = session.messages || (session.messages = {});
 
     req.flash = function(type, message) {
-      messages.push([type, message]);
+      if(messages.hasOwnProperty(type)){
+        messages[type].push(message);
+      }
+      else{
+        messages[type] = [message];
+      }
     };
+    res.locals.messages = req.session.messages;
+    req.session.messages = {};
     next();
   });
 
