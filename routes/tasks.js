@@ -2,12 +2,44 @@ var Promise = require('bluebird');
 var logger = require('../libs/logger');
 var evernoteClient = require('../libs/evernoteClient');
 var userModel = require('../libs/userModel');
+var notesCollection = require('../libs/notesCollection');
+
+Promise.longStackTraces();
+
+// /tasks/moveUp
+module.exports.moveUp = function(req, res){
+  notesCollection.moveNoteUp(req.session.userId, req.params.noteGuid)
+  	.then(function(){
+      return res.redirect("/tasks/view/nextActions");
+    })
+  	.error(function(e){
+      return res.render('error', {
+        errorMessage: e.message
+      })
+    });
+};
+
+// /tasks/moveDown
+module.exports.moveDown = function(req, res){
+  notesCollection.moveNoteDown(req.session.userId, req.params.noteGuid)
+  	.then(function(){
+      return res.redirect("/tasks/view/nextActions");
+    })
+  	.error(function(e){
+      return res.render('error', {
+        errorMessage: e.message
+      })
+    });
+};
 
 // /tasks/view/nextActions
 exports.viewNextActions = function(req, res){
   userModel.findUser({_id: req.session.userId}).error(function(e){
     logger.error('Error getting user: ' + e);
   }).done(function(user){
+    if(!user.notebooks || !user.notebooks.nextActions){
+      return res.redirect('/tasks/syncNotebooks');
+    }
     var nextActionsGuid = user.notebooks.nextActions;
     evernoteClient.getNotesList(req.session, nextActionsGuid).error(function(e){
       logger.error('Error getNotesList user: ' + e);
@@ -19,6 +51,7 @@ exports.viewNextActions = function(req, res){
   });
 };
 
+// /tasks/syncNotebooks
 module.exports.syncNotebooks = function(req, res){
   var noteStore = Promise.promisifyAll(evernoteClient.getClient(req.session).getNoteStore());
 

@@ -1,12 +1,12 @@
 // Module dependencies
 var express = require('express'),
-    RedisStore = require('connect-redis')(express),
-    redis = require('redis').createClient(),
     mainRoutes = require('./routes'),
     authRoutes = require('./routes/auth'),
     taskRoutes = require('./routes/tasks'),
     http = require('http'),
     config = require('./config'),
+    MongoStore = require('connect-mongo')(express),
+    db = require('monk')(config.mongo.host + '/everGTD'),
     path = require('path');
 
 var app = express();
@@ -26,10 +26,8 @@ app.configure(function(){
   app.use(express.cookieParser('secret'));
   app.use(express.session({
     secret: 'mwwaahhaahha this is very secret indeed ! 25',
-    store: new RedisStore({
-      'host': config.redis.host,
-      'port': config.redis.port,
-      'client': redis
+    store: new MongoStore({
+      db: 'everGTD'
     })
   }));
 
@@ -94,6 +92,8 @@ app.get('/auth/oauth_callback', restrict, authRoutes.oauthCallback);
 // Tasks
 app.get('/tasks/syncNotebooks', restrict, taskRoutes.syncNotebooks);
 app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
+app.get('/tasks/moveUp/:noteGuid', restrict, taskRoutes.moveUp);
+app.get('/tasks/moveDown/:noteGuid', restrict, taskRoutes.moveDown);
 // }}}
 
 // Run

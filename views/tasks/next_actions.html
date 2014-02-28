@@ -1,20 +1,29 @@
 {{#notes}}
-<p>
-  <h1>{{title}}
-  {{#tags}}
-  |
-  {{/tags}}
-  {{#tags}}
-    {{.}}
-  {{/tags}}
-</h1>
-  <pre>
-{{content}}
-  </pre>
-  <a href='https://sandbox.evernote.com/Home.action#st=p&n={{guid}}'>Edit in evernote</a>
-</p>
+<div class='well'>
+  <p>
+    <h1>{{title}}
+    {{#tags}}
+    |
+    {{/tags}}
+    {{#tags}}
+      {{.}}
+    {{/tags}}
+  </h1>
+    <pre>
+  {{content}}
+    </pre>
+  	<ul class='unstyled'>
+      <li><a href='https://sandbox.evernote.com/Home.action#st=p&n={{guid}}'>Edit in evernote</a></li>
+      <li><a href='/tasks/moveUp/{{guid}}'>Move up</a></li>
+      <li><a href='/tasks/moveDown/{{guid}}'>Move down</a></li>
+    </ul>
+  </p>
+</div>
 <hr/>
 {{/notes}}
+
+
+
 <!--
 vim: sw=2 ts=2 et:
 -->
