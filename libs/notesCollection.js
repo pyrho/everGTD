@@ -5,6 +5,16 @@ var db = require('monk')(config.mongo.host + '/everGTD');
 var logger = require('./logger');
 var notesCollection = db.get('notes');
 
+module.exports.deleteUserNotes = function(userId){
+  return new Promise(function(resolve, reject){
+    notesCollection.remove({userId: userId})
+    .success(function(){
+      resolve();
+    })
+    .on('error', reject);
+  });
+};
+
 module.exports.getUserNotes = function(userId){
   return new Promise(function(resolve, reject){
     notesCollection.findOne({userId: userId})
@@ -35,27 +45,28 @@ module.exports.storeUserNotes = function(userId, notes){
 module.exports.moveNoteDown = function(userId, noteGuid){
   return new Promise(function(resolve, reject){
     if(!userId || !noteGuid){
-      return reject(new Error("Invalid parameters"));
+      return reject(new Error('Invalid parameters'));
     }
 
     module.exports.getUserNotes(userId)
       .error(function(e){
-        return reject(new Error("Failed querying DB"));
+        return reject(new Error('Failed querying DB: ' + e));
       })
       .done(function(notes){
-        var i, oldIdx;
-          for(i = 0; i < notes.length; ++i){
-            if(notes[i].guid == noteGuid){
-              if(i == (notes.length - 1)){
-                return reject(new Error("Already at max index"));
-              }
-              var tmpSwap = notes[i + 1];
-              notes[i + 1] = notes[i];
-              notes[i] = tmpSwap ;
-              return resolve(module.exports.storeUserNotes(userId, notes));
-            }                    
+        var i;
+        for(i = 0; i < notes.length; ++i){
+          if(notes[i].guid === noteGuid){
+            if(i === (notes.length - 1)){
+              return reject(new Error('Already at max index'));
+            }
+            var tmpSwap = notes[i + 1];
+            notes[i + 1] = notes[i];
+            notes[i] = tmpSwap ;
+            return resolve(module.exports.storeUserNotes(userId, notes));
           }
-          return reject(new Error("Note not found"));
+
+        }
+        return reject(new Error('Note not found'));
       });
   });
 };
@@ -64,27 +75,27 @@ module.exports.moveNoteDown = function(userId, noteGuid){
 module.exports.moveNoteUp = function(userId, noteGuid){
   return new Promise(function(resolve, reject){
     if(!userId || !noteGuid){
-      return reject(new Error("Invalid parameters"));
+      return reject(new Error('Invalid parameters'));
     }
 
     module.exports.getUserNotes(userId)
       .error(function(e){
-        return reject(new Error("Failed querying DB"));
+        return reject(new Error('Failed querying DB' + e));
       })
       .done(function(notes){
-        var i, oldIdx;
-          for(i = 0; i < notes.length; ++i){
-            if(notes[i].guid == noteGuid){
-              if(i == 0){
-                return reject(new Error("Already at index 0"));
-              }
-              var tmpSwap = notes[i - 1];
-              notes[i-1] = notes[i];
-              notes[i] = tmpSwap ;
-              return resolve(module.exports.storeUserNotes(userId, notes));
-            }                    
+        var i;
+        for(i = 0; i < notes.length; ++i){
+          if(notes[i].guid === noteGuid){
+            if(i === 0){
+              return reject(new Error('Already at index 0'));
+            }
+            var tmpSwap = notes[i - 1];
+            notes[i-1] = notes[i];
+            notes[i] = tmpSwap ;
+            return resolve(module.exports.storeUserNotes(userId, notes));
           }
-          return reject(new Error("Note not found"));
+        }
+        return reject(new Error('Note not found'));
       });
   });
 };

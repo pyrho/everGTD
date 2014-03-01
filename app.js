@@ -4,9 +4,7 @@ var express = require('express'),
     authRoutes = require('./routes/auth'),
     taskRoutes = require('./routes/tasks'),
     http = require('http'),
-    config = require('./config'),
     MongoStore = require('connect-mongo')(express),
-    db = require('monk')(config.mongo.host + '/everGTD'),
     path = require('path');
 
 var app = express();
@@ -94,6 +92,7 @@ app.get('/tasks/syncNotebooks', restrict, taskRoutes.syncNotebooks);
 app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
 app.get('/tasks/moveUp/:noteGuid', restrict, taskRoutes.moveUp);
 app.get('/tasks/moveDown/:noteGuid', restrict, taskRoutes.moveDown);
+app.get('/tasks/deleteCachedNotes', restrict, taskRoutes.deleteCache);
 // }}}
 
 // Run

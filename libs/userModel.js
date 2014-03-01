@@ -34,7 +34,7 @@ module.exports.createUser = function(username, password, email){
     var findUserPromise = module.exports.findUser({username: username});
 
     findUserPromise.error(function(e){
-      return reject('Error in createUser: ' + e);
+      return reject(new Error('Error in createUser: ' + e));
     });
 
     findUserPromise.done(function(user){
@@ -55,9 +55,7 @@ module.exports.createUser = function(username, password, email){
       }).success(function(user){
         logger.info('User creating successful: ' + JSON.stringify(user));
         return resolve({found:false, user: user});
-      }).on('error', function(e){
-        return reject(e);
-      });
+      }).on('error', reject);
     });
 
   });
@@ -72,7 +70,7 @@ module.exports.updateUserAccessToken = function(evernoteUserId, newAccessToken){
       evernoteUserId: evernoteUserId
     }).success(function(user){
       if(!user){
-        reject('The user was not found');
+        reject(new Error('The user was not found'));
       }
       usersCollection.update({
         evernoteUserId: evernoteUserId,
@@ -80,12 +78,8 @@ module.exports.updateUserAccessToken = function(evernoteUserId, newAccessToken){
         accessToken: newAccessToken
       }).success(function(){
         resolve();
-      }).on('error', function(e){
-        reject(e);
-      });
-    }).on('error', function(e){
-      reject(e);
-    });
+      }).on('error', reject);
+    }).on('error', reject);
   });
 };
 
@@ -93,14 +87,12 @@ module.exports.bindEvernoteAccount = function(userId, accessToken, evernoteUserI
   return new Promise(function(resolve, reject){
     var findP = module.exports.findUser({_id: userId});
 
-    findP.error(function(e){
-      return reject(e);
-    });
+    findP.error(reject);
 
     findP.done(function(user){
       if(!user){
         logger.crit('User not found when binding to evernote account, SHOULD NOT HAPPEN!');
-        return reject('User not found');
+        return reject(new Error('User not found'));
       }
 
       module.exports.updateUserData({_id: userId}, {
@@ -112,38 +104,31 @@ module.exports.bindEvernoteAccount = function(userId, accessToken, evernoteUserI
       }).then(function(){
         evernoteClient.initialize(accessToken);
         return resolve();
-      }).error(function(e){
-        return reject(e);
-      });
+      }).error(reject);
     });
   });
 };
 
 module.exports.updateUserData = function(findParams, updatedParams){
   return new Promise(function(resolve, reject){
+    logger.debug('Updating user data for: ' + JSON.stringify(findParams));
     var usersCollection = db.get('users');
     usersCollection.update(findParams, updatedParams).success(function(){
+      logger.debug('Resolving, Updated user date with: ' + JSON.stringify(updatedParams));
       return resolve();
-    }).on('error', function(e){
-      return reject(e);
-    });
+    }).on('error', reject);
   });
 };
 
 module.exports.updateNotebooks = function(userId, naGuid, inbGuid){
-  return new Promise(function(resolve, reject){
-    module.exports.updateUserData({_id: userId}, {
-      '$set': {
-        'notebooks': {
-          'nextActions': naGuid,
-          'inbox': inbGuid
-        }
+  logger.debug('Updating user notebooks');
+  return module.exports.updateUserData({_id: userId}, {
+    '$set': {
+      'notebooks': {
+        'nextActions': naGuid,
+        'inbox': inbGuid
       }
-    }).error(function(e){
-      reject(e);
-    }).done(function(){
-      resolve();
-    });
+    }
   });
 };
 

@@ -50,9 +50,9 @@ function evernoteClient(){
 
       startIndex = startIndex || 0;
       logger.debug('Getting notes from ' + startIndex);
-      noteStore.findNotesMetadataAsync(self._accessToken, filter, startIndex, 32000, rspec).error(function(e){
-        return reject(e);
-      }).then(function(notesData){
+      noteStore.findNotesMetadataAsync(self._accessToken, filter, startIndex, 32000, rspec)
+      .error(reject)
+      .then(function(notesData){
         notesData.notes.forEach(function(note){
           logger.debug('Pushing note: ' + note.title);
           notes.push(note);
@@ -105,15 +105,9 @@ function evernoteClient(){
 
   this.getNoteTag = function(noteGuid){
     var self = this;
-    return new Promise(function(resolve, reject){
-      var client = self.getClient();
-      var noteStore = Promise.promisifyAll(client.getNoteStore());
-      return noteStore.getNoteTagNamesAsync(self._accessToken, noteGuid).error(function(e){
-        reject(e);
-      }).done(function(tags){
-        resolve(tags);
-      });
-    });
+    var client = self.getClient();
+    var noteStore = Promise.promisifyAll(client.getNoteStore());
+    return noteStore.getNoteTagNamesAsync(self._accessToken, noteGuid);
   };
 
   this.getNoteContent = function(noteGuid){
@@ -123,9 +117,9 @@ function evernoteClient(){
       var noteStore = Promise.promisifyAll(client.getNoteStore());
 
       logger.debug('Getting note data for ' + noteGuid);
-      noteStore.getNoteAsync(self._accessToken, noteGuid, true, false, false, false).error(function(e){
-        return reject(e);
-      }).done(function(noteWithContent){
+      noteStore.getNoteAsync(self._accessToken, noteGuid, true, false, false, false)
+      .error(reject)
+      .done(function(noteWithContent){
         noteWithContent.content = enml.PlainTextOfENML(noteWithContent.content);
         resolve(noteWithContent);
       });
@@ -134,24 +128,17 @@ function evernoteClient(){
 
   this.getNotesData = function(notesList){
     var self = this;
-    return new Promise(function(resolve, reject){
-      Promise.map(notesList, function(note){
-        return Promise.all([
-          self.getNoteContent(note.guid),
-          self.getNoteTag(note.guid)
-        ]).spread(function(noteContent, noteTags){
-          return {
-            tags: noteTags,
-            guid: note.guid,
-            title: note.title,
-            content: noteContent.content
-          };
-        });
-      }).then(function(notes){
-        return resolve(notes);
-      }).error(function(e){
-        console.log('>>>> ' + e);
-        return reject(e);
+    return Promise.map(notesList, function(note){
+      return Promise.all([
+        self.getNoteContent(note.guid),
+        self.getNoteTag(note.guid)
+      ]).spread(function(noteContent, noteTags){
+        return {
+          tags: noteTags,
+          guid: note.guid,
+          title: note.title,
+          content: noteContent.content
+        };
       });
     });
   };

@@ -9,31 +9,31 @@ Promise.longStackTraces();
 // /tasks/moveUp
 module.exports.moveUp = function(req, res){
   notesCollection.moveNoteUp(req.session.userId, req.params.noteGuid)
-  	.then(function(){
-      return res.redirect("/tasks/view/nextActions");
-    })
-  	.error(function(e){
-      return res.render('error', {
-        errorMessage: e.message
-      })
+  .then(function(){
+    return res.redirect('/tasks/view/nextActions');
+  })
+  .error(function(e){
+    return res.render('error', {
+      errorMessage: e.message
     });
+  });
 };
 
 // /tasks/moveDown
 module.exports.moveDown = function(req, res){
   notesCollection.moveNoteDown(req.session.userId, req.params.noteGuid)
-  	.then(function(){
-      return res.redirect("/tasks/view/nextActions");
-    })
-  	.error(function(e){
-      return res.render('error', {
-        errorMessage: e.message
-      })
+  .then(function(){
+    return res.redirect('/tasks/view/nextActions');
+  })
+  .error(function(e){
+    return res.render('error', {
+      errorMessage: e.message
     });
+  });
 };
 
 // /tasks/view/nextActions
-exports.viewNextActions = function(req, res){
+module.exports.viewNextActions = function viewNextActions(req, res){
   userModel.findUser({_id: req.session.userId}).error(function(e){
     logger.error('Error getting user: ' + e);
   }).done(function(user){
@@ -54,12 +54,13 @@ exports.viewNextActions = function(req, res){
 // /tasks/syncNotebooks
 module.exports.syncNotebooks = function(req, res){
   var noteStore = Promise.promisifyAll(evernoteClient.getClient(req.session).getNoteStore());
-
+  logger.debug('Syncing notebooks');
   noteStore.listNotebooksAsync(req.session.oauthAccessToken).error(function(e){
     logger.error('Error in syncNotebooks: ' + e);
     req.flash('error', 'Internal error');
     return res.redirect('/');
   }).done(function(notebooks){
+    logger.debug('Got list of notebooks');
     var nextActionsGuid = null;
     var inboxGuid = null;
     var i;
@@ -84,6 +85,8 @@ module.exports.syncNotebooks = function(req, res){
       return res.redirect('/');
     }
 
+    logger.debug('Found all notebooks: ' + nextActionsGuid + ', ' + inboxGuid);
+
     userModel.updateNotebooks(req.session.userId, nextActionsGuid, inboxGuid).error(function(e){
       req.flash('error', 'Internal error');
       logger.error('Error in syncNotebooks: ' + e);
@@ -93,6 +96,19 @@ module.exports.syncNotebooks = function(req, res){
       return res.redirect('/');
     });
 
+  });
+};
+
+module.exports.deleteCache = function(req, res){
+  notesCollection.deleteUserNotes(req.session.userId)
+  .error(function(e){
+    logger.error('Couldnt delete cache' + e);
+    req.flash('error', 'Internal error');
+    res.redirect('/');
+  })
+  .done(function(){
+    req.flash('success', 'Cache deleted');
+    res.redirect('/');
   });
 };
 
