@@ -32,6 +32,10 @@ module.exports.moveDown = function(req, res){
   });
 };
 
+module.exports.viewNextActions2 = function(req, res){
+  return res.render('tasks/next_actions2');
+};
+
 // /tasks/view/nextActions
 module.exports.viewNextActions = function viewNextActions(req, res){
   userModel.findUser({_id: req.session.userId}).error(function(e){
@@ -47,6 +51,16 @@ module.exports.viewNextActions = function viewNextActions(req, res){
       return res.render('tasks/next_actions', {
         notes: notes
       });
+    });
+  });
+};
+
+module.exports.getNextActions = function(req, res){
+  return userModel.findUser({_id: req.session.userId})
+  .done(function(user){
+    evernoteClient.getNotesList(req.session, user.notebooks.nextActions)
+    .done(function(notes){
+      return res.json(notes);
     });
   });
 };

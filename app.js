@@ -93,6 +93,10 @@ app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
 app.get('/tasks/moveUp/:noteGuid', restrict, taskRoutes.moveUp);
 app.get('/tasks/moveDown/:noteGuid', restrict, taskRoutes.moveDown);
 app.get('/tasks/deleteCachedNotes', restrict, taskRoutes.deleteCache);
+
+app.get('/tasks/na2', restrict, taskRoutes.viewNextActions2);
+app.get('/tasks/nextActions.json', restrict, taskRoutes.getNextActions);
+
 // }}}
 
 // Run
