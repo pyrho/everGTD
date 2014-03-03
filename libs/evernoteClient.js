@@ -51,7 +51,6 @@ function evernoteClient(){
       startIndex = startIndex || 0;
       logger.debug('Getting notes from ' + startIndex);
       noteStore.findNotesMetadataAsync(self._accessToken, filter, startIndex, 32000, rspec)
-      .error(reject)
       .then(function(notesData){
         notesData.notes.forEach(function(note){
           logger.debug('Pushing note: ' + note.title);
@@ -69,11 +68,15 @@ function evernoteClient(){
           logger.debug('Got all notes!');
           resolve(notes);
         }
-      });
+      })
+      .error(reject);
     });
   };
 
   this.getNotesList = function(session, notebookGuid){
+    if(!notebookGuid){
+      return Promise.reject(new Error('notebookGuid is undefined'));
+    }
     var self = this;
     return new Promise(function(resolve, reject){
       // Get cached data

@@ -32,8 +32,24 @@ module.exports.moveDown = function(req, res){
   });
 };
 
+module.exports.getNextActions = function(req, res){
+  userModel.findUser({_id: req.session.userId})
+  .done(function(user){
+    evernoteClient.getNotesList(req.session, user.notebooks.nextActions)
+    .then(function(notes){
+      return res.json(notes);
+    })
+    .error(function(e){
+      return res.send('ko' + e);
+    });
+  });
+};
+
 // /tasks/view/nextActions
-module.exports.viewNextActions = function viewNextActions(req, res){
+module.exports.viewNextActions = function(req, res){
+  return res.render('tasks/next_actions_angular');
+};
+module.exports.viewNextActionsOld = function viewNextActions(req, res){
   userModel.findUser({_id: req.session.userId}).error(function(e){
     logger.error('Error getting user: ' + e);
   }).done(function(user){

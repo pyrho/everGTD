@@ -67,9 +67,6 @@ module.exports.moveNoteDown = function(userId, noteGuid){
 
   return new Promise(function(resolve, reject){
     module.exports.getUserNotes(userId)
-      .error(function(e){
-        return reject(new Error('Failed querying DB: ' + e));
-      })
       .done(function(notes){
         var noteIndex = getNoteIndex(notes, noteGuid);
         if(noteIndex === -1){
@@ -79,6 +76,9 @@ module.exports.moveNoteDown = function(userId, noteGuid){
           return reject(new Error('Note already at bottom'));
         }
         return resolve(moveNote(notes, userId, noteIndex, noteIndex + 1));
+      })
+      .error(function(e){
+        return reject(new Error('Failed querying DB: ' + e));
       });
   });
 };

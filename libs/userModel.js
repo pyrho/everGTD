@@ -33,10 +33,6 @@ module.exports.createUser = function(username, password, email){
   return new Promise(function(resolve, reject){
     var findUserPromise = module.exports.findUser({username: username});
 
-    findUserPromise.error(function(e){
-      return reject(new Error('Error in createUser: ' + e));
-    });
-
     findUserPromise.done(function(user){
       if(user){
         logger.info('User already exists');
@@ -57,6 +53,10 @@ module.exports.createUser = function(username, password, email){
         return resolve({found:false, user: user});
       }).on('error', reject);
     });
+    findUserPromise.error(function(e){
+      return reject(new Error('Error in createUser: ' + e));
+    });
+
 
   });
 };

@@ -1,0 +1,18 @@
+{{#yield-htmltag}}
+<html ng-app="everGTD">
+{{/yield-htmltag}}
+
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+<script src="/angular/controllers.js"></script>
+
+<div ng-controller='NotesCtrl'>
+  <div ng-repeat='note in notes'>
+    {{=<% %>=}}
+      <h1>{{note.title}}</h1>
+      <h3>
+        <span ng-repeat='tag in note.tags'>{{tag}}</span>
+      </h3>
+      <pre>{{note.content}}</pre>
+    <%={{ }}=%>
+  </div>
+</div>

@@ -90,6 +90,7 @@ app.get('/auth/oauth_callback', restrict, authRoutes.oauthCallback);
 // Tasks
 app.get('/tasks/syncNotebooks', restrict, taskRoutes.syncNotebooks);
 app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
+app.get('/tasks/get/nextActions', restrict, taskRoutes.getNextActions);
 app.get('/tasks/moveUp/:noteGuid', restrict, taskRoutes.moveUp);
 app.get('/tasks/moveDown/:noteGuid', restrict, taskRoutes.moveDown);
 app.get('/tasks/deleteCachedNotes', restrict, taskRoutes.deleteCache);
