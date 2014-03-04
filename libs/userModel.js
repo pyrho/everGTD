@@ -120,7 +120,7 @@ module.exports.updateUserData = function(findParams, updatedParams){
   });
 };
 
-module.exports.updateNotebooks = function(userId, naGuid, inbGuid){
+module.exports.updateNotebookGuids = function(userId, naGuid, inbGuid){
   logger.debug('Updating user notebooks');
   return module.exports.updateUserData({_id: userId}, {
     '$set': {
@@ -131,5 +131,6 @@ module.exports.updateNotebooks = function(userId, naGuid, inbGuid){
     }
   });
 };
+
 
 // vim: sw=2 ts=2 et

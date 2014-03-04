@@ -55,6 +55,7 @@ module.exports.loginPost = function(req, res){
   userModel.authenticateUser(username, password)
     .then(function(user){
       if(user){
+        req.session.user = user;
         req.session.loggedin = true;
         req.session.userId = user._id;
         req.session.evernoteAccountBound = user.evernoteAccountBound;

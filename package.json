@@ -15,6 +15,7 @@
     "monk": "*",
     "winston": "*",
     "enml-js": "*",
-    "hogan-express": "*"
+    "hogan-express": "*",
+    "mongoose": "*"
   }
 }

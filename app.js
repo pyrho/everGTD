@@ -3,7 +3,9 @@ var express = require('express'),
     mainRoutes = require('./routes'),
     authRoutes = require('./routes/auth'),
     taskRoutes = require('./routes/tasks'),
+    noteRoutes = require('./routes/notes'),
     http = require('http'),
+    evernoteClient = require('./libs/evernoteClient'),
     MongoStore = require('connect-mongo')(express),
     path = require('path');
 
@@ -64,6 +66,7 @@ app.configure('development', function(){
 
 function restrict(req, res, next){
   if(req.session.loggedin){
+    evernoteClient.initialize(req.session.user.accessToken);
     next();
   }
   else{
@@ -78,22 +81,23 @@ app.get('/', restrict, mainRoutes.index);
 // Auth
 app.get('/auth/login', authRoutes.login);
 app.post('/auth/login', authRoutes.loginPost);
-
-app.get('/auth/logout', restrict, authRoutes.logout);
+app.get('/auth/logout', authRoutes.logout);
 
 app.get('/auth/register', authRoutes.register);
 app.post('/auth/register', authRoutes.registerPost);
+
+
 //  Evernote
 app.get('/auth/oauth', restrict, authRoutes.oauth);
 app.get('/auth/oauth_callback', restrict, authRoutes.oauthCallback);
 
 // Tasks
+app.get('/sync', restrict, noteRoutes.sync);
 app.get('/tasks/syncNotebooks', restrict, taskRoutes.syncNotebooks);
 app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
 app.get('/tasks/get/nextActions', restrict, taskRoutes.getNextActions);
 app.get('/tasks/moveUp/:noteGuid', restrict, taskRoutes.moveUp);
 app.get('/tasks/moveDown/:noteGuid', restrict, taskRoutes.moveDown);
-app.get('/tasks/deleteCachedNotes', restrict, taskRoutes.deleteCache);
 // }}}
 
 // Run
