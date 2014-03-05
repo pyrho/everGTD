@@ -1,87 +1,69 @@
-var Promise = require('bluebird');
 var Evernote = require('evernote').Evernote;
 var config = require('../config.json');
-var evernoteClient = require('../libs/evernoteClient');
-var userModel = require('./../libs/userModel');
+var UserModel = require('./../model/userModel');
 var logger = require('./../libs/logger');
+var utils = require('./../utils');
+
 
 // Accounts {{{
-exports.register = function(req, res){
-  return res.render('register');
-};
-exports.registerPost = function(req, res){
+function register(req, res){
   var username = req.body.username;
   var password = req.body.password;
   var email = req.body.email;
-
-  if(!username || !password || !email){
-    logger.error('Invalid parameters for createUser');
-    req.flash('You need to specify a valid username/passsword/email.');
-    return res.redirect('/auth/createAccount');
-  }
-
-  userModel.createUser(username, password, email)
-    .then(function(userData){
-      if(userData.found){
-        req.flash('error', 'This username already exists');
-        return res.redirect('/auth/createAccount');
+  UserModel.findByUsername(username)
+    .then(function(user){
+      console.log("DEBUG0: " + JSON.stringify(user));
+      if(user){
+        req.flash('error', 'This username is already registered');
+        return res.redirect('/auth/register');
       }
-
-      req.session.loggedin = true;
-      req.session.userId = userData.user._id;
-      logger.info('Created user with id: ' + req.session.userId);
-      return res.redirect('/');
-    })
-    .error(function(e){
-      req.flash('Internal error.');
-      logger.error('Error in createUser: ' + e);
-      return res.redirect('/auth/createAccount');
+      var newUser = new UserModel();
+      console.log("DEBUG: " + JSON.stringify(newUser));
+      newUser.test();
+      newUser.setDataOnAccountCreation(username, email, password)
+        .then(function(){
+          console.log('Account created!');
+          return res.redirect('/auth/login');
+        });
     });
-};
+}
 
-module.exports.login = function(req, res){
-  return res.render('login');
-};
 
-module.exports.loginPost = function(req, res){
+function login(req, res){
   var username = req.body.username;
   var password = req.body.password;
 
   if(!username || !password){
     logger.error('Invalid parameters for login');
-    req.flash('You need to specify a valid username/passsword.');
+    req.flash('error', 'You need to specify a valid username/passsword.');
   }
 
-  userModel.authenticateUser(username, password)
+  UserModel.checkAuthentication(username, password)
     .then(function(user){
-      if(user){
-        req.session.user = user;
-        req.session.loggedin = true;
-        req.session.userId = user._id;
-        req.session.evernoteAccountBound = user.evernoteAccountBound;
-        req.session.oauthAccessToken = user.accessToken;
+      if(!user){
+        req.flash('info', 'Wrong username/password combination');
+        return res.redirect('/auth/login');
       }
-      else{
-        req.flash('Invalid username/password combination');
-      }
+      console.log(user._id);
+      req.session.userId = user._id;
       return res.redirect('/');
     })
     .error(function(e){
-      req.flash('Internal error');
+      req.flash('error', 'Internal error');
       logger.error('Error in authenticateUser: ' + e);
       return res.redirect('/auth/login');
     });
-};
+}
 
-exports.logout = function(req, res) {
+function logout(req, res) {
   req.session.destroy();
   res.redirect('/auth/login');
-};
+}
 // }}}
 
 
 // Evernote OAuth {{{
-exports.oauth = function(req, res) {
+function oauth(req, res) {
   var client = new Evernote.Client({
     consumerKey: config.API_CONSUMER_KEY,
     consumerSecret: config.API_CONSUMER_SECRET,
@@ -104,10 +86,10 @@ exports.oauth = function(req, res) {
     }
   });
 
-};
+}
 
 // OAuth callback
-exports.oauthCallback = function(req, res) {
+function oauthCallback(req, res) {
   var client = new Evernote.Client({
     consumerKey: config.API_CONSUMER_KEY,
     consumerSecret: config.API_CONSUMER_SECRET,
@@ -128,18 +110,37 @@ exports.oauthCallback = function(req, res) {
         req.session.oauthAccessToken = oauthAccessToken;
         req.session.oauthAccessTtokenSecret = oauthAccessTokenSecret;
 
-        userModel.bindEvernoteAccount(req.session.userId, oauthAccessToken, results.edam_userId).error(function(e){
-          logger.error(e);
-        }).done(function(){
-          req.session.evernoteAccountBound = true;
-          // Should sync notebooks here..
-          res.redirect('/');
-        });
+        if(!req.session.userId){
+          throw new Error('This should never happen, we should have a user at this point');
+        }
+        UserModel.getUserById(req.session.userId)
+          .then(function(user){
+            user.bindEvernoteAccount(oauthAccessToken, results.edam_userId)
+              .then(function(){
+                // Should sync notebooks here..
+                return res.redirect('/');
+              })
+              .error(function(e){
+                req.flash('error', 'Internal error');
+                logger.error('Cant bind evernote account, mongo error: ' + e);
+                return res.redirect('/');
+              });
+          });
       }
     });
-};
+}
 
 // }}}
 
+var auth = exports;
+var publicFunctions = [
+  login,
+  register,
+  logout,
+  oauth,
+  oauthCallback
+];
+
+utils.registerModuleFunctions(auth, publicFunctions);
 
 // vim: sw=2 ts=2 et

@@ -6,8 +6,10 @@ var notesCollection = require('../libs/notesCollection');
 
 Promise.longStackTraces();
 
+exports = {};
+
 // /tasks/moveUp
-module.exports.moveUp = function(req, res){
+exports.moveUp = function(req, res){
   notesCollection.moveNoteUp(req.session.userId, req.params.noteGuid)
   .then(function(){
     return res.redirect('/tasks/view/nextActions');
@@ -20,7 +22,7 @@ module.exports.moveUp = function(req, res){
 };
 
 // /tasks/moveDown
-module.exports.moveDown = function(req, res){
+exports.moveDown = function(req, res){
   notesCollection.moveNoteDown(req.session.userId, req.params.noteGuid)
   .then(function(){
     return res.redirect('/tasks/view/nextActions');
@@ -32,7 +34,7 @@ module.exports.moveDown = function(req, res){
   });
 };
 
-module.exports.getNextActions = function(req, res){
+exports.getNextActions = function(req, res){
   userModel.findUser({_id: req.session.userId})
     .done(function(user){
       user.getNotes()
@@ -54,12 +56,12 @@ module.exports.getNextActions = function(req, res){
 };
 
 // /tasks/view/nextActions
-module.exports.viewNextActions = function(req, res){
+exports.viewNextActions = function(req, res){
   return res.render('tasks/next_actions_angular');
 };
 
 // /tasks/syncNotebooks
-module.exports.syncNotebooks = function(req, res){
+function syncNotebooks(req, res){
   var noteStore = Promise.promisifyAll(evernoteClient.getClient(req.session).getNoteStore());
   logger.debug('Syncing notebooks');
   noteStore.listNotebooksAsync(req.session.oauthAccessToken)
@@ -108,8 +110,9 @@ module.exports.syncNotebooks = function(req, res){
       return res.redirect('/');
     });
 };
+module.exports.syncNotebooks = syncNotebooks;
 
-module.exports.deleteCache = function(req, res){
+exports.deleteCache = function deleteCache(req, res){
   notesCollection.deleteUserNotes(req.session.userId)
   .error(function(e){
     logger.error('Couldnt delete cache' + e);

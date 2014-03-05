@@ -2,11 +2,12 @@
 var express = require('express'),
     mainRoutes = require('./routes'),
     authRoutes = require('./routes/auth'),
-    taskRoutes = require('./routes/tasks'),
+    //taskRoutes = require('./routes/tasks'),
     noteRoutes = require('./routes/notes'),
     http = require('http'),
     evernoteClient = require('./libs/evernoteClient'),
     MongoStore = require('connect-mongo')(express),
+    UserModel = require('./model/userModel'),
     path = require('path');
 
 var app = express();
@@ -38,9 +39,9 @@ app.configure(function(){
 
   app.use(function(req, res, next) {
     var session = req.session;
-    var messages = session.messages || (session.messages = {});
 
     req.flash = function(type, message) {
+      var messages = session.messages || (session.messages = {});
       if(messages.hasOwnProperty(type)){
         messages[type].push(message);
       }
@@ -64,9 +65,14 @@ app.configure('development', function(){
 
 
 
+
 function restrict(req, res, next){
-  if(req.session.loggedin){
-    evernoteClient.initialize(req.session.user.accessToken);
+  if(req.session.userId){
+    UserModel.getUserById(req.session.userId)
+      .then(function(user){
+        evernoteClient.initialize(user.accessToken);
+      });
+
     next();
   }
   else{
@@ -79,12 +85,12 @@ app.get('/', restrict, mainRoutes.index);
 
 
 // Auth
-app.get('/auth/login', authRoutes.login);
-app.post('/auth/login', authRoutes.loginPost);
+app.get('/auth/login', function(req, res){ return res.render('login'); });
+app.post('/auth/login', authRoutes.login);
 app.get('/auth/logout', authRoutes.logout);
 
-app.get('/auth/register', authRoutes.register);
-app.post('/auth/register', authRoutes.registerPost);
+app.get('/auth/register', function(req, res){ return res.render('register'); });
+app.post('/auth/register', authRoutes.register);
 
 
 //  Evernote
@@ -93,11 +99,11 @@ app.get('/auth/oauth_callback', restrict, authRoutes.oauthCallback);
 
 // Tasks
 app.get('/sync', restrict, noteRoutes.sync);
-app.get('/tasks/syncNotebooks', restrict, taskRoutes.syncNotebooks);
-app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
-app.get('/tasks/get/nextActions', restrict, taskRoutes.getNextActions);
-app.get('/tasks/moveUp/:noteGuid', restrict, taskRoutes.moveUp);
-app.get('/tasks/moveDown/:noteGuid', restrict, taskRoutes.moveDown);
+//app.get('/tasks/syncNotebooks', restrict, taskRoutes.syncNotebooks);
+//app.get('/tasks/view/nextActions', restrict, taskRoutes.viewNextActions);
+//app.get('/tasks/get/nextActions', restrict, taskRoutes.getNextActions);
+//app.get('/tasks/moveUp/:noteGuid', restrict, taskRoutes.moveUp);
+//app.get('/tasks/moveDown/:noteGuid', restrict, taskRoutes.moveDown);
 // }}}
 
 // Run

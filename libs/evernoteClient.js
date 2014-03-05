@@ -15,6 +15,10 @@ function evernoteClient(){
 
   // Functions
   this.initialize = function(accessToken){
+    if(!accessToken){
+      logger.debug('evernoteClient not initializing because accessToken is null');
+      return;
+    }
     if(this._client){
       logger.debug('evernoteClient already initialized');
       return;
@@ -27,14 +31,12 @@ function evernoteClient(){
     });
   };
 
-  this.getClient = function(session){
+  this.getClient = function(){
     if(this._client){
       return this._client;
     }
-    else{
-      this.initialize(session.oauthAccessToken);
-      return this._client;
-    }
+
+    throw new Error('This should never happend, session must be initialzed at login or at account binding');
   };
 
   this.getNotesFromNotebook = function(session, notebookGuid, startIndex){
