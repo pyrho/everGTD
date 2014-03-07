@@ -2,18 +2,25 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var Promise = require('bluebird');
 Promise.longStackTraces();
-var crypto = require('crypto');
 var NoteSchema = require('./noteSchema');
+var utils = require('../../utils');
 
 
 var userSchema = new Schema({
   username: {type: String, unique: true},
   email: String,
-  password: String,
-  accessToken: String,
+  password: String, // hashed
+  cipheredAccessToken: String, // hashed
+  salt: String,
   evernoteUserId: Number,
   notes: [NoteSchema]
 });
+
+////////////////////////////////////////////////////////////////////////////////
+//// Virtuals {{{
+userSchema.virtual('acessToken').get(function(){
+});
+// }}}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,15 +55,17 @@ userSchema.statics.checkAuthentication = function(username, password){
   }
   var self = this;
   return new Promise(function(resolve, reject){
-    var hashedPassword = crypto.createHash('md5').update(password).digest('hex');
-    self.findOne({
-      username: username,
-      password: hashedPassword
-    }, function(e, user){
-      if(e){
-        return reject(new Error(''+e));
-      }
-      return resolve(user);
+    utils.getHashSaltAndKeyFromPassword(password).spread(function(passwordHashed, userSymetricKey){
+      utils.cache.set('symetricKey', userSymetricKey);
+      self.findOne({
+        username: username,
+        password: passwordHashed
+      }, function(e, user){
+        if(e){
+          return reject(new Error(''+e));
+        }
+        return resolve(user);
+      });
     });
   });
 };
@@ -65,18 +74,15 @@ userSchema.statics.checkAuthentication = function(username, password){
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Methods {{{
-userSchema.methods.test = function(){
-  console.log("TESTED");
-  return Promise.resolve();
-};
 userSchema.methods.bindEvernoteAccount = function(accessToken, evernoteUserId){
   if(!accessToken || !evernoteUserId){
     return Promise.reject(new Error('Invalid parameters'));
   }
   var self = this;
   return new Promise(function(resolve, reject){
+    var key = utils.cache.get('symetricKey');
     self.evernoteUserId = evernoteUserId;
-    self.accessToken = accessToken;
+    self.cipheredAccessToken = utils.cipherData(key, accessToken);
     self.save(function(e){
       if(e){
         return reject(new Error(''+e));
@@ -92,17 +98,17 @@ userSchema.methods.setDataOnAccountCreation = function(username, email, password
   }
   var self = this;
 
-
   return new Promise(function(resolve, reject){
-    var hashedPassword = crypto.createHash('md5').update(password).digest('hex');
     self.username = username;
     self.email = email;
-    self.password = hashedPassword;
-    self.save(function(e){
-      if(e){
-        return reject(new Error(''+e));
-      }
-      return resolve();
+    utils.getHashSaltAndKeyFromPassword(password).spread(function(passwordHashed){
+      self.password = passwordHashed;
+      self.save(function(e){
+        if(e){
+          return reject(new Error(''+e));
+        }
+        return resolve();
+      });
     });
   });
 };

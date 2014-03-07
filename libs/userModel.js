@@ -83,7 +83,7 @@ module.exports.updateUserAccessToken = function(evernoteUserId, newAccessToken){
   });
 };
 
-module.exports.bindEvernoteAccount = function(userId, accessToken, evernoteUserId){
+module.exports.bindEvernoteAccountDEPRECATED = function(userId, accessToken, evernoteUserId){
   return new Promise(function(resolve, reject){
     var findP = module.exports.findUser({_id: userId});
 
