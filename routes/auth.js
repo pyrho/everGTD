@@ -12,13 +12,11 @@ function register(req, res){
   var email = req.body.email;
   UserModel.findByUsername(username)
     .then(function(user){
-      console.log("DEBUG0: " + JSON.stringify(user));
       if(user){
         req.flash('error', 'This username is already registered');
         return res.redirect('/auth/register');
       }
       var newUser = new UserModel();
-      console.log("DEBUG: " + JSON.stringify(newUser));
       newUser.test();
       newUser.setDataOnAccountCreation(username, email, password)
         .then(function(){
@@ -41,7 +39,7 @@ function login(req, res){
   UserModel.checkAuthentication(username, password)
     .then(function(user){
       if(!user){
-        req.flash('info', 'Wrong username/password combination');
+        req.flash('error', 'Wrong username/password combination');
         return res.redirect('/auth/login');
       }
       console.log(user._id);

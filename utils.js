@@ -16,13 +16,16 @@ module.exports.registerModuleFunctions = function(thisModule, functions){
 
 module.exports.db = mongoose.createConnection('mongodb://localhost/everGTD');
 
-function test(a, b){
-  module.exports.checkArgs(arguments, 3)
-  .error(function(e){
-    console.log('MAILOL');
-  });
-
-  console.log(a + b);
-}
+module.exports.cache = function(){
+  var cache = {};
+  return {
+    set: function(key, val){
+      cache[key] = val;
+    },
+    get: function(key){
+      return cache[key];
+    }
+  };
+};
 
 // vim: sw=2 ts=2 et

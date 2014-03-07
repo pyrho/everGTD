@@ -1,11 +1,16 @@
 var Promise = require('bluebird');
 var logger = require('../libs/logger');
 var evernoteClient = require('../libs/evernoteClient');
-var userModel = require('../libs/userModel');
+var UserModel = require('../model/userModel');
 var notesCollection = require('../libs/notesCollection');
 
 function sync(req, res){
-  var user = req.session.user;
+  UserModel.getUserById(req.session.userId)
+    .then(function(user){
+    })
+    .error(function(e){
+    });
+  
   // Get NA & INB notebooks
   // Get the notes from these notebooks.
 };
